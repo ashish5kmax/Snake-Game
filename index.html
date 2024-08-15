@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <link rel="icon" type="image/png" href="./images/logo.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="./extra.css">
+    <link rel="stylesheet" href="./styles.css">
+
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+    <style>
+        #heading {
+            font-family: "Montserrat", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        input {
+            font-size: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 75px;
+            animation: lightSpeedInLeft;
+            animation-duration: 2s;
+        }
+
+        * {
+            background-color: rgb(23, 17, 26);
+            color: white;
+            font-family: "Montserrat", sans-serif;
+        }
+
+        canvas {
+            border: 1px solid white;
+            /* Change border color to white */
+            display: block;
+            margin: 0 auto;
+        }
+
+        #score {
+            text-align: center;
+            font-size: 24px;
+        }
+
+        #restart-button {
+            display: none;
+            margin: 0 auto;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+        }
+
+        #game-instructions {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px;
+            border-radius: 7px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #game-instructions h3 {
+            margin-top: 0;
+        }
+
+        #game-instructions ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        #game-instructions li {
+            margin-bottom: 5px;
+        }
+
+
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+                /* Initial and final state: no translation */
+            }
+
+            50% {
+                transform: translateY(-20px);
+                /* Middle state: translate element upward */
+            }
+        }
+
+        .my-element {
+            font-size: 22px;
+            text-align: center;
+            animation: bounce 1.2s infinite;
+            /* Apply animation, repeat infinitely */
+        }
+
+        #heading {
+            text-align: center;
+            /* Center align the heading */
+        }
+
+        img {
+            width: 150px;
+            /* Optional: Adjust image size as needed */
+        }
+
+        h1 {
+            margin: 0;
+            /* Remove default margin to avoid extra space */
+        }
+
+        #player-input {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .leaderboard {
+            font-size: 20px;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgb(23, 17, 26);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgb(23, 17, 26);
+            animation: fadeInRight;
+            /* referring directly to the animation's @keyframe declaration */
+            animation-duration: 2s;
+            /* don't forget to set a duration! */
+        }
+
+        @media only screen and (max-width: 375px) {
+
+            /* Adjust canvas size for mobile devices */
+            canvas {
+                height: 325px;
+                /* Set custom height for mobile */
+                margin-left: 15px;
+            }
+
+            #score {
+                font-size: 20px;
+                margin-left: -5px;
+            }
+        }
+
+        @media only screen and (max-width: 320px) {
+
+            /* Adjust canvas size for mobile devices */
+            canvas {
+                height: 120px;
+                /* Set custom height for mobile */
+                margin-left: 6px;
+            }
+
+            #score {
+                font-size: 10px;
+                margin-left: -175px;
+            }
+        }
+
+        @media only screen and (max-width: 425px) {
+
+            /* Hide snake image for screens less than 426px wide */
+            img.snake-image {
+                display: none;
+            }
+
+            h1 {
+                font-size: 70px;
+                margin-top: 12px;
+                /* Adjust the margin for the heading */
+                margin-bottom: 50px;
+            }
+
+            .my-element {
+                font-size: 10px;
+            }
+
+            /* Adjust canvas container width for screens less than 426px wide */
+            #canvas-container {
+                margin-left: 7%;
+                width: 85%;
+                /* Adjust the width as needed */
+                padding: 10px;
+                /* Add padding */
+                box-sizing: border-box;
+                /* Include padding in the width calculation */
+            }
+
+            /* Adjust canvas size for mobile devices */
+            canvas {
+                width: 100%;
+                /* Make canvas width 100% of its container */
+                height: auto;
+                /* Let the height adjust automatically */
+            }
+
+            #score {
+                font-size: 20px;
+                text-align: center;
+                /* Center align the score */
+            }
+
+            /* Add margin-top and adjust font-size for the speed levels */
+            #speed-levels {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 15px;
+                /* Add margin-top */
+                margin-top: 20px;
+                margin-bottom: 2%;
+            }
+
+            #speed-levels>button {
+                font-size: 16px;
+                /* Adjust font-size */
+            }
+
+            #game-instructions {
+                margin-top: 50px;
+                /* Add padding to provide space around the content */
+            }
+
+            #GI {
+                text-align: center;
+                /* Add margin to the left */
+                margin-top: 20px;
+                /* Add margin to the top */
+                font-size: 25px;
+            }
+
+            #PC {
+                display: none;
+            }
+
+            #MOBILE,
+            #LVL {
+                text-align: center;
+                margin-top: 18px;
+                /* Add margin between the sections */
+            }
+
+            .my-element {
+                font-size: 20px;
+            }
+        }
+
+        @media only screen and (max-width: 768px) {
+            .leaderboard {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                top: initial;
+                right: initial;
+                margin-top: 20px;
+                margin-bottom: 20px;
+            }
+
+            .leaderboard h3 {
+                margin-bottom: 10px;
+            }
+
+            ol#leaderboardList {
+                margin: 0;
+                padding: 0;
+                list-style-type: none;
+                text-align: center;
+            }
+
+            ol#leaderboardList li {
+                margin-bottom: 5px;
+            }
+
+            #game-instructions {
+                top: 0;
+                left: 0;
+                right: 0;
+                margin: auto;
+                position: static;
+                padding: 15px;
+                background-color: rgb(23, 17, 26);
+            }
+
+            #GI {
+                text-align: center;
+                /* Add margin to the left */
+                margin-top: 20px;
+                /* Add margin to the top */
+                font-size: 25px;
+            }
+
+            #PC {
+                display: none;
+            }
+
+            #MOBILE,
+            #LVL {
+                text-align: center;
+                margin-top: 18px;
+                /* Add margin between the sections */
+            }
+        }
+
+
+        #player-input {
+            display: flex;
+        }
+
+        ol#leaderboardList li {
+            margin-bottom: 10px;
+            /* Adjust the margin bottom as needed */
+        }
+
+        #speed-levels {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        #speed-levels>button {
+            margin-top: 1.5%;
+            font-size: 20px;
+            margin-bottom: 1.2%;
+        }
+
+        footer {
+            margin-top: 3.6%;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Main heading part -->
+    <div id="heading">
+        <h1>Snake Game</h1>
+        <img class="snake-image" src="./images/snake.gif" alt="snake_animated">
+    </div>
+
+    <!-- Game Instructions -->
+    <div id="game-instructions">
+        <h3 id="GI">Game Instructions</h3>
+        <div id="PC">
+            <p>PC Controls:</p>
+            <ul>
+                <li>Use <strong>arrow keys</strong> to move the snake.</li>
+            </ul>
+        </div>
+        <div id="MOBILE">
+            <p>Mobile Controls:</p>
+            <ul>
+                <li>Swipe <strong>up</strong>, <strong>down</strong>, <strong>left</strong>, or <strong>right</strong>
+                    to
+                    move
+                    the snake.</li>
+            </ul>
+        </div>
+        <div id="LVL">
+            <p>Level Selection:</p>
+            <ul>
+                <li>Click on the <strong>Level 1</strong>, <strong>Level 2</strong>, or <strong>Level 3</strong> buttons
+                    to
+                    adjust the speed.</li>
+            </ul>
+        </div>
+    </div>
+
+
+    <br />
+    <br />
+    <br />
+    <h3 class="my-element" id="start-msg">Click on the box to start playing!!</h3>
+    <div id="speed-levels">
+        <button onclick="setSpeed(150)" class="button-73">Level 1</button>
+        <button onclick="setSpeed(100)" class="button-73">Level 2</button>
+        <button onclick="setSpeed(50)" class="button-73">Level 3</button>
+    </div>
+
+    <div id="player-input">
+        <input type="text" id="playerName" placeholder="Enter your name">
+        <button onclick="savePlayerData()" class="button-73">Submit</button>
+    </div>
+
+    <!-- Canvas part-->
+    <div id="canvas-container">
+        <br />
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        <br />
+        <br />
+    </div>
+    <div id="score"></div>
+    <button id="restart-button" onclick="restart()">Restart</button>
+
+
+    <!-- Snake Leaderboard -->
+    <div id="leaderboard" class="leaderboard">
+        <h3>Snake Leaderboard</h3>
+        <br />
+        <ol id="leaderboardList"></ol>
+    </div>
+
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+
+    <!-- Testimonials -->
+    <div class="slider">
+        <input type="radio" name="slider" title="slide1" checked="checked" class="slider__nav" />
+        <input type="radio" name="slider" title="slide2" class="slider__nav" />
+        <input type="radio" name="slider" title="slide3" class="slider__nav" />
+        <input type="radio" name="slider" title="slide4" class="slider__nav" />
+        <div class="slider__inner">
+            <div class="slider__contents"><img src="./images/irshad.jpeg" class="slider__image fa fa-codepen"></img>
+                <h2 class="slider__caption">Irshad</h2>
+                <p class="slider__txt"><i>"It is a really great game I enjoyed it a lot"</i></p>
+            </div>
+            <div class="slider__contents"><img src="./images/gagan.jpeg" class="slider__image fa fa-codepen"></img>
+                <h2 class="slider__caption">Gagan</h2>
+                <p class="slider__txt"><i>"This game has an incredibly immersive."</i></p>
+            </div>
+            <div class="slider__contents"><img src="./images/hitesh.jpeg" class="slider__image fa fa-codepen"></img>
+                <h2 class="slider__caption">Hitesh</h2>
+                <p class="slider__txt"><i>"The visuals are absolutely stunning."</i>
+                </p>
+            </div>
+            <div class="slider__contents"><img src="./images/sahid.jpeg" class="slider__image fa fa-codepen"></img>
+                <h2 class="slider__caption">Sahid</h2>
+                <p class="slider__txt"><i>"Great Game!."</i></p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class='cr-con'><a href="https://github.com/ashish4kmax">Copyright &copy; 2024 | Made by Ashish</a></div>
+    </footer>
+
+
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1204.0.min.js"></script>
+    <script>
+        // Initialize AWS DynamoDB client
+        AWS.config.update({
+            region: 'us-east-1', // Update with your AWS region
+            accessKeyId: 'AKIAQHEPT6D464V24Y5E', // Update with your AWS access key ID
+            secretAccessKey: '5JFXbFuU8QEHcBnTHlLLkxwmfYQVcHi6JUU7TAyW' // Update with your AWS secret access key
+        })
+
+        let gameOverFlag = false; // Add a flag to track whether the game is over or not
+        let speed = 100;
+
+        function setSpeed(speeds) {
+            speed = speeds;
+        }
+
+        const docClient = new AWS.DynamoDB.DocumentClient();
+
+        // logic part
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const box = 20;
+        let snake = [];
+        let food = {};
+        let score = 0;
+        let d;
+        let gameLoop;
+
+        // Modify the init function to hide the restart button
+        function init() {
+            snake = [{ x: 9 * box, y: 10 * box }];
+            food = { x: Math.floor(Math.random() * 20) * box, y: Math.floor(Math.random() * 20) * box };
+            score = 0;
+            d = 'RIGHT';
+            document.getElementById('score').innerText = `Score: ${score / 20}`;
+            document.getElementById('restart-button').style.display = 'none'; // Hide restart button
+            document.getElementById('start-msg').style.display = 'none'; // Hide the start message
+        }
+
+        // Keyboard controls for desktop
+        function direction(event) {
+            if (event.keyCode == 37 && d != 'RIGHT') {
+                d = 'LEFT';
+            } else if (event.keyCode == 38 && d != 'DOWN') {
+                d = 'UP';
+            } else if (event.keyCode == 39 && d != 'LEFT') {
+                d = 'RIGHT';
+            } else if (event.keyCode == 40 && d != 'UP') {
+                d = 'DOWN';
+            }
+        }
+
+        function handleSwipe(startX, startY, endX, endY) {
+            const swipeLengthX = Math.abs(endX - startX);
+            const swipeLengthY = Math.abs(endY - startY);
+
+            // Check if swipe was more horizontal or vertical
+            if (swipeLengthX > swipeLengthY) {
+                if (endX < startX && d !== 'RIGHT') {
+                    d = 'LEFT';
+                } else if (endX > startX && d !== 'LEFT') {
+                    d = 'RIGHT';
+                }
+            } else {
+                if (endY < startY && d !== 'DOWN') {
+                    d = 'UP';
+                } else if (endY > startY && d !== 'UP') {
+                    d = 'DOWN';
+                }
+            }
+        }
+
+        function collision(head, array) {
+            for (let i = 0; i < array.length; i++) {
+                if (head.x == array[i].x && head.y == array[i].y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'red';
+            ctx.fillRect(food.x, food.y, box, box);
+            for (let i = 0; i < snake.length; i++) {
+                ctx.fillStyle = (i === 0) ? 'green' : 'darkgreen';
+                ctx.fillRect(snake[i].x, snake[i].y, box, box);
+                ctx.strokeStyle = 'black';
+                ctx.strokeRect(snake[i].x, snake[i].y, box, box);
+                if (i === 0) {
+                    // Draw eyes
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(snake[i].x + 5, snake[i].y + 5, 5, 5);
+                    ctx.fillRect(snake[i].x + 10, snake[i].y + 5, 5, 5);
+                }
+            }
+            let snakeX = snake[0].x;
+            let snakeY = snake[0].y;
+
+            switch (d) {
+                case 'LEFT':
+                    if (snakeX - box < 0) {
+                        gameOver();
+                        return;
+                    } else {
+                        snakeX -= box;
+                    }
+                    break;
+                case 'UP':
+                    if (snakeY - box < 0) {
+                        gameOver();
+                        return;
+                    } else {
+                        snakeY -= box;
+                    }
+                    break;
+                case 'RIGHT':
+                    if (snakeX + box >= canvas.width) {
+                        gameOver();
+                        return;
+                    } else {
+                        snakeX += box;
+                    }
+                    break;
+                case 'DOWN':
+                    if (snakeY + box >= canvas.height) {
+                        gameOver();
+                        return;
+                    } else {
+                        snakeY += box;
+                    }
+                    break;
+            }
+
+            // Check if the snake's head collides with its own body
+            for (let i = 1; i < snake.length; i++) {
+                if (snakeX === snake[i].x && snakeY === snake[i].y) {
+                    gameOver();
+                    return;
+                }
+            }
+
+            if (snakeX === food.x && snakeY === food.y) {
+                score += box;
+                food = {
+                    x: Math.floor(Math.random() * 20) * box,
+                    y: Math.floor(Math.random() * 20) * box
+                };
+                document.getElementById('score').innerText = `Score: ${score / 20}`;
+            } else {
+                snake.pop();
+            }
+
+            const newHead = {
+                x: snakeX,
+                y: snakeY
+            };
+
+            snake.unshift(newHead);
+        }
+
+        // Start the game when canvas is clicked
+        canvas.addEventListener('click', function () {
+            const playerName = document.getElementById("playerName").value.trim();
+            if (playerName === '') {
+                alert("Please enter your name!");
+                return;
+            } else {
+                init(); // Initialize game
+                gameLoop = setInterval(draw, speed); // Start game loop
+                gameOverFlag = true; // Set the flag to true indicating the game is ongoing
+            }
+        });
+
+        // Swipe controls for touch devices
+        let startX, startY;
+
+        canvas.addEventListener('touchstart', function (e) {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        });
+
+        canvas.addEventListener('touchmove', function (e) {
+            e.preventDefault();  // Prevent default scrolling
+
+            // Handle swipe logic here (same as your handleSwipe function)
+            const endX = e.changedTouches[0].clientX;
+            const endY = e.changedTouches[0].clientY;
+            handleSwipe(startX, startY, endX, endY);
+        });
+
+        canvas.addEventListener('touchend', function (e) {
+            const endX = e.changedTouches[0].clientX;
+            const endY = e.changedTouches[0].clientY;
+            handleSwipe(startX, startY, endX, endY);
+        });
+
+        // Keyboard controls for desktop
+        document.addEventListener('keydown', direction);
+
+        // database part
+        // Modify the gameOver function to show the restart button
+        function gameOver() {
+            clearInterval(gameLoop);
+            // Display final score
+            const finalScore = score / 20;
+            document.getElementById('score').innerText = `Score: ${finalScore}`;
+            // Show restart button
+            document.getElementById('restart-button').style.display = 'flex';
+
+            // Update player score in the leaderboard
+            const playerName = document.getElementById('playerName').value.trim();
+            if (playerName !== '') {
+                // Get the player's ID based on their name
+                const params = {
+                    TableName: 'SnakeLeaderboard',
+                    FilterExpression: 'playerName = :name',
+                    ExpressionAttributeValues: {
+                        ':name': playerName
+                    }
+                };
+
+                docClient.scan(params, function (err, data) {
+                    if (err) {
+                        alert("Error updating player score", err);
+                        return;
+                    }
+
+                    if (data.Items.length > 0) {
+                        // Update the player's score if found
+                        const playerId = data.Items[0].playerId;
+                        const prevScore = data.Items[0].playerScore;
+                        const newScore = finalScore;
+
+                        if (newScore > prevScore) {
+                            const updateParams = {
+                                TableName: 'SnakeLeaderboard',
+                                Key: {
+                                    playerId: playerId
+                                },
+                                UpdateExpression: 'set playerScore = :score',
+                                ExpressionAttributeValues: {
+                                    ':score': newScore
+                                }
+                            };
+
+                            docClient.update(updateParams, function (err, data) {
+                                if (!err) {
+                                    alert("Player score updated successfully", data);
+                                    // Refresh leaderboard after updating player score
+                                    refreshLeaderboard();
+                                }
+                            });
+                        }
+                    } else {
+                        // Player not found, insert a new player
+                        const newPlayerScore = finalScore;
+                        const newPlayerParams = {
+                            TableName: 'SnakeLeaderboard',
+                            Item: {
+                                playerId: data.Items.length + 1, // Generate sequential player ID
+                                playerName: playerName,
+                                playerScore: newPlayerScore
+                            }
+                        };
+
+                        docClient.put(newPlayerParams, function (err, data) {
+                            if (err) {
+                                alert("Error adding new player", err);
+                            } else {
+                                alert("New player added successfully", data);
+                                // Refresh leaderboard after adding new player
+                                refreshLeaderboard();
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
+        // Function to refresh leaderboard
+        function refreshLeaderboard() {
+            docClient.scan({ TableName: 'SnakeLeaderboard' }, function (err, data) {
+                if (err) {
+                    alert("Unable to read data from table", err);
+                    return;
+                }
+
+                const leaderboardList = document.getElementById('leaderboardList');
+                leaderboardList.innerHTML = ''; // Clear previous entries
+
+                // Group players by name and keep track of their highest scores
+                const playersMap = {};
+                data.Items.forEach(player => {
+                    if (!playersMap[player.playerName] || player.playerScore > playersMap[player.playerName].playerScore) {
+                        playersMap[player.playerName] = player;
+                    }
+                });
+
+                // Sort the players by score (descending)
+                const sortedPlayers = Object.values(playersMap).sort((a, b) => b.playerScore - a.playerScore).slice(0, 10); // Get top 10 players
+
+                sortedPlayers.forEach(player => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${player.playerName}: ${player.playerScore}`;
+                    leaderboardList.appendChild(listItem);
+                });
+
+                // Check if there are more players
+                const morePlayers = data.Items.length > 10;
+
+                // If there are more players, add a "Show More" button
+                if (morePlayers) {
+                    const showMoreButton = document.createElement('button');
+                    showMoreButton.textContent = 'Show More';
+                    showMoreButton.onclick = function () {
+                        showAllPlayers(data.Items);
+                    };
+                    leaderboardList.appendChild(showMoreButton);
+                }
+            });
+        }
+
+
+
+        // Function to show all players in the leaderboard
+        function showAllPlayers(players) {
+            const leaderboardList = document.getElementById('leaderboardList');
+            leaderboardList.innerHTML = ''; // Clear previous entries
+
+            // Group players by name and keep track of their highest scores
+            const playersMap = {};
+            players.forEach(player => {
+                if (!playersMap[player.playerName] || player.playerScore > playersMap[player.playerName].playerScore) {
+                    playersMap[player.playerName] = player;
+                }
+            });
+
+            // Sort the players by score (descending)
+            const sortedPlayers = Object.values(playersMap).sort((a, b) => b.playerScore - a.playerScore);
+
+            sortedPlayers.forEach(player => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${player.playerName}: ${player.playerScore}`;
+                leaderboardList.appendChild(listItem);
+            });
+        }
+
+        function restart() {
+            init(); // Restart the game
+            gameLoop = setInterval(draw, speed); // Start game loop again
+        }
+
+        // Initial leaderboard refresh
+        refreshLeaderboard();
+    </script>
+
+</body>
+
+</html>
