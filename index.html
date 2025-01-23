@@ -467,17 +467,17 @@
             region: 'us-east-1', // Update with your AWS region
             accessKeyId: 'AKIA54WIF5RGHSC4RU56', // Update with your AWS access key ID
             secretAccessKey: 'VfSAc64v9+74R2xvt188bW9w3yC/oOpfPUu84izP' // Update with your AWS secret access key
-        })
-
+        });
+    
         let gameOverFlag = false; // Add a flag to track whether the game is over or not
         let speed = 100;
-
+    
         function setSpeed(speeds) {
             speed = speeds;
         }
-
+    
         const docClient = new AWS.DynamoDB.DocumentClient();
-
+    
         // logic part
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -487,7 +487,7 @@
         let score = 0;
         let d;
         let gameLoop;
-
+    
         // Modify the init function to hide the restart button
         function init() {
             snake = [{ x: 9 * box, y: 10 * box }];
@@ -498,7 +498,7 @@
             document.getElementById('restart-button').style.display = 'none'; // Hide restart button
             document.getElementById('start-msg').style.display = 'none'; // Hide the start message
         }
-
+    
         // Keyboard controls for desktop
         function direction(event) {
             if (event.keyCode == 37 && d != 'RIGHT') {
@@ -511,11 +511,11 @@
                 d = 'DOWN';
             }
         }
-
+    
         function handleSwipe(startX, startY, endX, endY) {
             const swipeLengthX = Math.abs(endX - startX);
             const swipeLengthY = Math.abs(endY - startY);
-
+    
             // Check if swipe was more horizontal or vertical
             if (swipeLengthX > swipeLengthY) {
                 if (endX < startX && d !== 'RIGHT') {
@@ -531,7 +531,7 @@
                 }
             }
         }
-
+    
         function collision(head, array) {
             for (let i = 0; i < array.length; i++) {
                 if (head.x == array[i].x && head.y == array[i].y) {
@@ -540,7 +540,7 @@
             }
             return false;
         }
-
+    
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = 'red';
@@ -559,7 +559,7 @@
             }
             let snakeX = snake[0].x;
             let snakeY = snake[0].y;
-
+    
             switch (d) {
                 case 'LEFT':
                     if (snakeX - box < 0) {
@@ -594,7 +594,7 @@
                     }
                     break;
             }
-
+    
             // Check if the snake's head collides with its own body
             for (let i = 1; i < snake.length; i++) {
                 if (snakeX === snake[i].x && snakeY === snake[i].y) {
@@ -602,7 +602,7 @@
                     return;
                 }
             }
-
+    
             if (snakeX === food.x && snakeY === food.y) {
                 score += box;
                 food = {
@@ -613,15 +613,15 @@
             } else {
                 snake.pop();
             }
-
+    
             const newHead = {
                 x: snakeX,
                 y: snakeY
             };
-
+    
             snake.unshift(newHead);
         }
-
+    
         // Start the game when canvas is clicked
         canvas.addEventListener('click', function () {
             const playerName = document.getElementById("playerName").value.trim();
@@ -634,33 +634,33 @@
                 gameOverFlag = true; // Set the flag to true indicating the game is ongoing
             }
         });
-
+    
         // Swipe controls for touch devices
         let startX, startY;
-
+    
         canvas.addEventListener('touchstart', function (e) {
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;
         });
-
+    
         canvas.addEventListener('touchmove', function (e) {
             e.preventDefault();  // Prevent default scrolling
-
+    
             // Handle swipe logic here (same as your handleSwipe function)
             const endX = e.changedTouches[0].clientX;
             const endY = e.changedTouches[0].clientY;
             handleSwipe(startX, startY, endX, endY);
         });
-
+    
         canvas.addEventListener('touchend', function (e) {
             const endX = e.changedTouches[0].clientX;
             const endY = e.changedTouches[0].clientY;
             handleSwipe(startX, startY, endX, endY);
         });
-
+    
         // Keyboard controls for desktop
         document.addEventListener('keydown', direction);
-
+    
         // database part
         // Modify the gameOver function to show the restart button
         function gameOver() {
@@ -670,7 +670,7 @@
             document.getElementById('score').innerText = `Score: ${finalScore}`;
             // Show restart button
             document.getElementById('restart-button').style.display = 'flex';
-
+    
             // Update player score in the leaderboard
             const playerName = document.getElementById('playerName').value.trim();
             if (playerName !== '') {
@@ -682,19 +682,19 @@
                         ':name': playerName
                     }
                 };
-
+    
                 docClient.scan(params, function (err, data) {
                     if (err) {
                         alert("Error updating player score", err);
                         return;
                     }
-
+    
                     if (data.Items.length > 0) {
                         // Update the player's score if found
                         const playerId = data.Items[0].playerId;
                         const prevScore = data.Items[0].playerScore;
                         const newScore = finalScore;
-
+    
                         if (newScore > prevScore) {
                             const updateParams = {
                                 TableName: 'SnakeLeaderboard',
@@ -706,7 +706,7 @@
                                     ':score': newScore
                                 }
                             };
-
+    
                             docClient.update(updateParams, function (err, data) {
                                 if (!err) {
                                     alert("Player score updated successfully", data);
@@ -716,107 +716,59 @@
                             });
                         }
                     } else {
-                        // Player not found, insert a new player
-                        const newPlayerScore = finalScore;
-                        const newPlayerParams = {
-                            TableName: 'SnakeLeaderboard',
-                            Item: {
-                                playerId: data.Items.length + 1, // Generate sequential player ID
-                                playerName: playerName,
-                                playerScore: newPlayerScore
-                            }
-                        };
-
-                        docClient.put(newPlayerParams, function (err, data) {
-                            if (err) {
-                                alert("Error adding new player", err);
-                            } else {
-                                alert("New player added successfully", data);
-                                // Refresh leaderboard after adding new player
-                                refreshLeaderboard();
-                            }
-                        });
+                        // Save player data if not found
+                        savePlayerData(playerName, finalScore);
                     }
                 });
             }
         }
-
-        // Function to refresh leaderboard
-        function refreshLeaderboard() {
-            docClient.scan({ TableName: 'SnakeLeaderboard' }, function (err, data) {
+    
+        // Function to save player data
+        function savePlayerData(playerName, score) {
+            const playerData = {
+                playerName: playerName,
+                playerScore: score,
+                playerId: Date.now() // Unique ID based on timestamp
+            };
+    
+            const params = {
+                TableName: 'SnakeLeaderboard',
+                Item: playerData
+            };
+    
+            docClient.put(params, function (err, data) {
                 if (err) {
-                    alert("Unable to read data from table", err);
-                    return;
-                }
-
-                const leaderboardList = document.getElementById('leaderboardList');
-                leaderboardList.innerHTML = ''; // Clear previous entries
-
-                // Group players by name and keep track of their highest scores
-                const playersMap = {};
-                data.Items.forEach(player => {
-                    if (!playersMap[player.playerName] || player.playerScore > playersMap[player.playerName].playerScore) {
-                        playersMap[player.playerName] = player;
-                    }
-                });
-
-                // Sort the players by score (descending)
-                const sortedPlayers = Object.values(playersMap).sort((a, b) => b.playerScore - a.playerScore).slice(0, 10); // Get top 10 players
-
-                sortedPlayers.forEach(player => {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = `${player.playerName}: ${player.playerScore}`;
-                    leaderboardList.appendChild(listItem);
-                });
-
-                // Check if there are more players
-                const morePlayers = data.Items.length > 10;
-
-                // If there are more players, add a "Show More" button
-                if (morePlayers) {
-                    const showMoreButton = document.createElement('button');
-                    showMoreButton.textContent = 'Show More';
-                    showMoreButton.onclick = function () {
-                        showAllPlayers(data.Items);
-                    };
-                    leaderboardList.appendChild(showMoreButton);
+                    alert("Error saving player data", err);
+                } else {
+                    alert("Player data saved successfully", data);
+                    refreshLeaderboard(); // Refresh the leaderboard after saving
                 }
             });
         }
-
-
-
-        // Function to show all players in the leaderboard
-        function showAllPlayers(players) {
-            const leaderboardList = document.getElementById('leaderboardList');
-            leaderboardList.innerHTML = ''; // Clear previous entries
-
-            // Group players by name and keep track of their highest scores
-            const playersMap = {};
-            players.forEach(player => {
-                if (!playersMap[player.playerName] || player.playerScore > playersMap[player.playerName].playerScore) {
-                    playersMap[player.playerName] = player;
+    
+        // Function to refresh the leaderboard
+        function refreshLeaderboard() {
+            const params = {
+                TableName: 'SnakeLeaderboard'
+            };
+    
+            docClient.scan(params, function (err, data) {
+                if (err) {
+                    alert("Error retrieving leaderboard", err);
+                } else {
+                    let leaderboardHTML = '<h2>Leaderboard</h2>';
+                    data.Items.forEach(function (item) {
+                        leaderboardHTML += `<p>${item.playerName} - Score: ${item.playerScore}</p>`;
+                    });
+                    document.getElementById('leaderboard').innerHTML = leaderboardHTML;
                 }
             });
-
-            // Sort the players by score (descending)
-            const sortedPlayers = Object.values(playersMap).sort((a, b) => b.playerScore - a.playerScore);
-
-            sortedPlayers.forEach(player => {
-                const listItem = document.createElement('li');
-                listItem.textContent = `${player.playerName}: ${player.playerScore}`;
-                leaderboardList.appendChild(listItem);
-            });
         }
-
-        function restart() {
-            init(); // Restart the game
-            gameLoop = setInterval(draw, speed); // Start game loop again
-        }
-
-        // Initial leaderboard refresh
-        refreshLeaderboard();
+    
+        // Initialize game
+        init();
     </script>
+
 
 </body>
 
